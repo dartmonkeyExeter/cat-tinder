@@ -12,15 +12,35 @@ class Cat(Base):
     __tablename__ = 'cat'
 
     id = db.Column(db.String, primary_key=True)
-    name = db.Column(db.String(64), index=True)
     upvotes = db.Column(db.Integer, default=0)
     downvotes = db.Column(db.Integer, default=0)
-    uploaded = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    breed = db.Column(db.String(64), index=True)
-    age = db.Column(db.Integer)
 
     def __repr__(self):
         return f'<Cat {self.name}>'
+    
+class User(Base):
+    __tablename__ = 'user'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+class Favourite(Base):
+    __tablename__ = 'favourite'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    cat_id = db.Column(db.String, db.ForeignKey('cat.id'), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Favourite {self.id}>'
+
 
 # Configure SQLite database
 engine = create_engine('sqlite:///database.db', echo=True)

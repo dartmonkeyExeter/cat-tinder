@@ -5,12 +5,106 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tindpurr - Cat Rating Site</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
     <div class="main-content">
-        <div class="cat-one">
-            
-        </div>
+        <div class="cat" id="{{ cat[0]['id'] }}">
+            <img src="{{ cat[0]['url'] }}" alt="Cat 1" class="cat-image">
+
+            <hr>
+
+            <p class="divider">♥ ♦ rate this kitty ♠ ♣</p>
+
+            <hr>
+
+            <div class="buttons">
+                <button class="vote-button" id="down-vote" onclick="vote(-1)">Downvote</button>
+                <button class="vote-button" id="up-vote" onclick="vote(1)">Upvote</button>
+            </div>
+        </div>    
+        
     </div>
+
+    <script>
+        const apiKey = "{{ key }}";
+
+        async function nextCat() {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: "{{ url_for('main.get_cats', amount=1) }}", // Adjust URL as needed
+                    type: "GET",
+                    success: function(response) {
+                        // Prepare the data you want to return
+                        const response_data = {
+                            id: response[0].id,
+                            url: response[0].url
+                        };
+                        resolve(response_data);  // Resolve the promise with the data
+                    },
+                    error: function(error) {
+                        console.log(error);  // Log the error
+                        reject(error);  // Reject the promise in case of an error
+                    }
+                });
+            });
+        }
+        
+        function vote(amount) {
+            var currCatID = document.querySelector(".cat").id;
+            // i was gonna use the cat's api built-in voting but it wont work so ill just create a db
+            $.ajax({
+                url: "{{ url_for('main.vote') }}",
+                type: "POST",
+                data: {
+                    cat_id: currCatID,
+                    amount: amount
+                },
+                success: function(response) {
+                    animation(amount);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        async function animation(amount) {
+
+            // add the slide left animation if the cat is down voted,
+            // and slide right if the cat is upvoted
+            // play them, then remove the animation class, set opacity to 0, get next cat, fade in opacity
+
+            buttons = document.querySelectorAll(".vote-button");
+            buttons.forEach(button => {
+                button.onclick = null;
+            });
+
+            var currCat = document.querySelector(".cat");
+            currCat.classList.remove("fade-in");
+            var animation = "";
+
+            if (amount === -1) {
+                animation = "slide-left";
+            } else {
+                animation = "slide-right";
+            }
+
+            currCat.classList.add(animation);
+
+            var nextCatData = await nextCat();
+
+            currCat.style.opacity = 0;
+            currCat.classList.remove(animation);
+            currCat.classList.add("fade-in");
+            
+            buttons.forEach(button => {
+                button.onclick = function() {
+                    vote(button.id === "up-vote" ? 1 : -1);
+                };
+            });
+        }
+            
+    </script>
 </body>
 </html>
