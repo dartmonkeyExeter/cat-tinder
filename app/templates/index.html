@@ -19,8 +19,8 @@
             <hr>
 
             <div class="buttons">
-                <button class="vote-button" id="down-vote" onclick="vote(-1)">Downvote</button>
-                <button class="vote-button" id="up-vote" onclick="vote(1)">Upvote</button>
+                <button class="vote-button" id="-1" onclick="vote(-1)">Downvote</button>
+                <button class="vote-button" id="1" onclick="vote(1)">Upvote</button>
             </div>
         </div>    
         
@@ -28,6 +28,8 @@
 
     <script>
         const apiKey = "{{ key }}";
+        const catImage = document.querySelector(".cat-image");
+        const buttons = document.querySelectorAll(".vote-button");
 
         async function nextCat() {
             return new Promise((resolve, reject) => {
@@ -70,18 +72,11 @@
         }
 
         async function animation(amount) {
-
-            // add the slide left animation if the cat is down voted,
-            // and slide right if the cat is upvoted
-            // play them, then remove the animation class, set opacity to 0, get next cat, fade in opacity
-
-            buttons = document.querySelectorAll(".vote-button");
             buttons.forEach(button => {
                 button.onclick = null;
             });
 
             var currCat = document.querySelector(".cat");
-            currCat.classList.remove("fade-in");
             var animation = "";
 
             if (amount === -1) {
@@ -92,17 +87,32 @@
 
             currCat.classList.add(animation);
 
-            var nextCatData = await nextCat();
-
             currCat.style.opacity = 0;
-            currCat.classList.remove(animation);
-            currCat.classList.add("fade-in");
+
+            var data = await nextCat();
             
-            buttons.forEach(button => {
-                button.onclick = function() {
-                    vote(button.id === "up-vote" ? 1 : -1);
-                };
-            });
+            var intv = setInterval(() => {
+                if (data.id !== currCat.id) {
+                    currCat.id = data.id;
+                    catImage.src = data.url;
+                    currCat.classList.remove("slide-left");
+                    currCat.classList.remove("slide-right");
+                    
+                    var intv2 = setInterval(() => {
+                        if (catImage.complete) {
+                            currCat.style.opacity = 1;
+                            clearInterval(intv2);
+                        }
+                    }, 50);
+
+                    buttons.forEach(button => {
+                        button.onclick = function() {
+                            vote(parseInt(button.id));
+                        };
+                        });
+                    clearInterval(intv);
+                }
+            }, 50);
         }
             
     </script>

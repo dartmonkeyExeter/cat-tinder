@@ -5,6 +5,7 @@ body {
     height: 100vh;
     margin: 0;
     background-color: #f0f0f0;
+    overflow: hidden;
 }
 
 .main-content {
@@ -25,6 +26,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     opacity: 1;
+    transition: opacity 0.5s;
 }
 
 .cat-image {
@@ -44,37 +46,20 @@ body {
     animation: flyLeft 0.5s ease-in forwards;
 }
 
-.fade-in {
-    animation: fadeIn 0.25s ease-in forwards;
-}
-
 @keyframes flyRight {
     0% {
         transform: translateX(0);
-        opacity: 1;
     }
     100% {
         transform: translateX(100%);
-        opacity: 0;
     }
 }
 
 @keyframes flyLeft {
     0% {
         transform: translateX(0);
-        opacity: 1;
     }
     100% {
         transform: translateX(-100%);
-        opacity: 0;
-    }
-}
-
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
     }
 }
