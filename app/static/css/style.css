@@ -46,6 +46,28 @@ body {
     animation: flyLeft 0.5s ease-in forwards;
 }
 
+.buttons {
+    display: flex;
+    width: 100%;
+    height: fit-content;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.vote-button {
+    border-radius: 100%;
+    width: 75px;
+    height: 75px;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: black;
+    font-weight: bold;
+    box-shadow: 0 4px 0px rgba(0, 0, 0, 0.1);
+}
+
 @keyframes flyRight {
     0% {
         transform: translateX(0);
