@@ -116,5 +116,15 @@
         }
             
     </script>
+
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "ArrowLeft") {
+                vote(-1);
+            } else if (event.key === "ArrowRight") {
+                vote(1);
+            }
+        })
+    </script>
 </body>
 </html>
