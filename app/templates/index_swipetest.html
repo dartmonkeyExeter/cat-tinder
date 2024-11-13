@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tindpurr - Cat Rating Site</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="main-content">
+        <div class="cat" id="{{ cat[0]['id'] }}">
+            <div class="top-buttons">
+                <div class="favourite-button">
+                </div>
+
+                <div class="report-button">
+                </div>
+            </div>
+
+            <img src="{{ cat[0]['url'] }}" alt="Cat 1" class="cat-image">
+
+            <hr>
+
+            <p class="divider">♥ ♦ rate this kitty ♠ ♣</p>
+
+            <hr>
+
+            <div class="buttons">
+                <button class="vote-button downvote" id="-1" onclick="vote(-1)">Downvote</button>
+                <button class="vote-button upvote" id="1" onclick="vote(1)">Upvote</button>
+            </div>
+        </div>    
+        
+    </div>
+    <script>
+        const apiKey = "{{ key }}";
+        const catImage = document.querySelector(".cat-image");
+        const buttons = document.querySelectorAll(".vote-button");
+        let voteEnabled = true;
+
+        setInterval(() => {
+            console.log(voteEnabled);
+        }, 100);
+
+        async function nextCat() {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: "{{ url_for('main.get_cats', amount=1) }}", // Adjust URL as needed
+                    type: "GET",
+                    success: function(response) {
+                        // Prepare the data you want to return
+                        const response_data = {
+                            id: response[0].id,
+                            url: response[0].url
+                        };
+                        resolve(response_data);  // Resolve the promise with the data
+                    },
+                    error: function(error) {
+                        console.log(error);  // Log the error
+                        reject(error);  // Reject the promise in case of an error
+                    }
+                });
+            });
+        }
+        
+        function vote(amount) {
+            var currCatID = document.querySelector(".cat").id;
+            // i was gonna use the cat's api built-in voting but it wont work so ill just create a db
+            if (voteEnabled) {
+                $.ajax({
+                    url: "{{ url_for('main.vote') }}",
+                    type: "POST",
+                    data: {
+                        cat_id: currCatID,
+                        amount: amount
+                    },
+                    success: function(response) {
+                        animation(amount);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            }
+        }
+
+        async function animation(amount) {
+            buttons.forEach(button => {
+                button.onclick = null;
+                voteEnabled = false;
+            });
+
+            var currCat = document.querySelector(".cat");
+            var animation = "";
+
+            if (amount === -1) {
+                animation = "slide-left";
+            } else {
+                animation = "slide-right";
+            }
+
+            currCat.classList.add(animation);
+
+            currCat.style.opacity = 0;
+
+            var data = await nextCat();
+            
+            var intv = setInterval(() => {
+                if (data.id !== currCat.id) {
+                    currCat.id = data.id;
+                    catImage.src = data.url;
+                    currCat.classList.remove("slide-left");
+                    currCat.classList.remove("slide-right");
+                    
+                    var intv2 = setInterval(() => {
+                        if (catImage.complete) {
+                            currCat.style.opacity = 1;
+                            setTimeout(() => {voteEnabled = true;}, 400);
+                            clearInterval(intv2);
+                        }
+                    }, 50);
+
+                    buttons.forEach(button => {
+                        button.onclick = function() {
+                            vote(parseInt(button.id));
+                        };
+                        });
+                    clearInterval(intv);
+                }
+            }, 50);
+        }
+            
+    </script>
+
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "ArrowLeft" && voteEnabled) {
+                vote(-1);
+            } else if (event.key === "ArrowRight" && voteEnabled) {
+                vote(1);
+            }
+        })
+    </script>
+
+    <script>
+    // JavaScript to detect swipe gestures
+    function detectSwipe(element, callback) {
+        let startX, startY, endX, endY;
+
+        element.addEventListener('touchstart', (e) => {
+            // Get the initial touch position when touch starts
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+        }, { passive: true });
+
+        element.addEventListener('touchmove', (e) => {
+            // Prevent default scroll behavior for better swipe recognition
+            e.preventDefault();
+        }, { passive: false });
+
+        element.addEventListener('touchend', (e) => {
+            // Get the touch end position when touch ends
+            const touch = e.changedTouches[0];
+            endX = touch.clientX;
+            endY = touch.clientY;
+
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const diffX = endX - startX;
+            const diffY = endY - startY;
+            const absDiffX = Math.abs(diffX);
+            const absDiffY = Math.abs(diffY);
+
+            // Determine swipe direction based on the larger axis difference
+            if (absDiffX > 100 || absDiffY > 100) {  // Set minimum distance to qualify as swipe
+                let direction;
+                if (absDiffX > absDiffY) {
+                    direction = diffX > 0 ? 'right' : 'left';
+                } else {
+                    direction = diffY > 0 ? 'down' : 'up';
+                }
+                callback(direction);
+            }
+        }
+    }
+
+    // Usage
+    detectSwipe(document, (direction) => {
+        if (direction === 'left' && voteEnabled) {
+            vote(-1);
+        } else if (direction === 'right' && voteEnabled) {
+            vote(1);
+        }
+    });
+
+    </script>
+</body>
+</html>

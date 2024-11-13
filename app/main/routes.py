@@ -17,32 +17,15 @@ BASE_URL = "https://api.thecatapi.com/v1"
 
 @bp.route("/")
 def index():
-    ab = random.randint(0, 1)
-
-    if ab == 0:
-        return redirect(url_for("main.indexA"))
-
-    if ab == 1:
-        return redirect(url_for("main.indexB"))
-
-
-@bp.route("/indexA")
-def indexA():
-    # get cat, and render the template
+    ab = "3"
     cat = get_cats(1)
-    print(cat)
 
-    return render_template("index.html", cat=cat, key=API_KEY)
-
-
-@bp.route("/indexB")
-def indexB():
-    # get cat, and render the template
-    cat = get_cats(1)
-    print(cat)
-
-    return render_template("index.html", cat=cat, key=API_KEY)
-
+    if ab == "1":
+        return render_template("index.html", cat=cat, key=API_KEY)
+    if ab == "2":
+        return render_template("index_swapdir.html", cat=cat, key=API_KEY)
+    if ab == "3":
+        return render_template("index_swipetest.html", cat=cat, key=API_KEY)
 
 @bp.route("/get_cats/<int:amount>", methods=["GET"])
 def get_cats(amount):
